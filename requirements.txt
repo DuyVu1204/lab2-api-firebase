@@ -1,0 +1,21 @@
+# Backend
+fastapi
+uvicorn
+firebase-admin
+google-cloud-firestore
+pydantic
+
+# Frontend
+streamlit
+requests
+
+# Nếu dùng xác thực email:
+email-validator
+
+# Nếu dùng upload file:
+python-multipart
+
+# Nếu dùng Pyrebase cho xác thực client:
+Pyrebase4
+
+# Nếu dùng thêm các package khác, bổ sung tại đây
