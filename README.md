@@ -1,4 +1,4 @@
-# Lab 1: APPLICATION PROGRAMMING INTERFACE AND FIREBASE STUDIO
+# Lab 2: APPLICATION PROGRAMMING INTERFACE AND FIREBASE STUDIO
 
 ## Thông tin sinh viên
 
@@ -7,12 +7,14 @@
 - Trường: Trường Đại học Khoa học Tự nhiên TP.HCM
 - Khoa: Khoa Công nghệ Thông tin
 
-## Tên mô hình và liên kết Hugging Face
-
 
 ## Mô tả ngắn về hệ thống
 
-Đồ án xây dựng một REST API để tóm tắt văn bản tiếng Anh. Server dùng FastAPI, còn phần suy luận dùng mô hình `facebook/bart-large-cnn` từ Hugging Face. Khi nhận text đầu vào, hệ thống sẽ tokenize, sinh câu tóm tắt và trả về JSON gồm `summary` và `model`.
+Đồ án xây dựng một ứng dụng ghi chú gồm backend FastAPI và frontend Streamlit, tích hợp Firebase để xác thực người dùng và lưu trữ dữ liệu trên Firestore. Người dùng có thể đăng ký, đăng nhập, tạo/sửa/xóa ghi chú và đồng bộ dữ liệu theo tài khoản đăng nhập. Hệ thống cũng hỗ trợ đăng nhập bằng Google và chỉ chấp nhận email `@gmail.com` cho luồng email/password.
+
+## Thêm secrets.toml
+
+
 
 ## Cài đặt môi trường và thư viện
 
@@ -90,10 +92,11 @@ streamlit run frontend/app.py
 Mở các đường dẫn kiểm tra:
 
 - Local URL: `http://localhost:8501`
-- Network URL: `http://192.168.1.12:8501`
+- Network URL: sẽ hiển thị trong terminal sau khi chạy `streamlit run frontend/app.py` (địa chỉ mạng thay đổi theo máy)
 
 
 ## Liên kết video demo
 
 - Xem video: [Google Drive - Demo sản phẩm](https://drive.google.com/file/d/1KZavJ_0sfSAw3SeonUAnoASgT9hHWxXh/view?usp=sharing)
 - Ghi chú: Vui lòng bật quyền `Anyone with the link` để giảng viên có thể xem trực tiếp.
+
