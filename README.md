@@ -3,6 +3,7 @@
 ## Thông tin sinh viên
 
 - Họ và tên: Nguyễn Duy Vũ
+- MSSV: 24120495
 - Môn học: Tư Duy Tính Toán
 - Trường: Trường Đại học Khoa học Tự nhiên TP.HCM
 - Khoa: Khoa Công nghệ Thông tin
