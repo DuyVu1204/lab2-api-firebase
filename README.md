@@ -10,7 +10,162 @@
 
 ## Mô tả ngắn về hệ thống
 
-Đồ án xây dựng một ứng dụng ghi chú gồm backend FastAPI và frontend Streamlit, tích hợp Firebase để xác thực người dùng và lưu trữ dữ liệu trên Firestore. Người dùng có thể đăng ký, đăng nhập, tạo/sửa/xóa ghi chú và đồng bộ dữ liệu theo tài khoản đăng nhập. Hệ thống cũng hỗ trợ đăng nhập bằng Google và chỉ chấp nhận email `@gmail.com` cho luồng email/password.
+Đồ án xây dựng một ứng dụng ghi chú gồm backend FastAPI và frontend Streamlit, tích hợp Firebase để xác thực người dùng và lưu trữ dữ liệu trên Firestore. Người dùng có thể đăng ký, đăng nhập, tạo/sửa/xóa ghi chú và đồng bộ dữ liệu theo tài khoản đăng nhập. Hệ thống cũng hỗ trợ đăng nhập bằng Google và email.
+
+## Các tính năng chính của hệ thống
+
+- Đăng ký tài khoản bằng email/password (gửi email xác thực).
+- Đăng nhập bằng email/password (trả về `idToken` và `refreshToken`).
+- Đăng nhập bằng Google (OAuth flow + callback, sign in with Firebase).
+- Lấy thông tin người dùng hiện tại (`/auth/me`).
+- Tạo / Liệt kê / Cập nhật / Xoá ghi chú cho người dùng (endpoints `/notes`).
+- Lưu trữ ghi chú trên Firestore theo từng user; ghi chú được sắp xếp theo `timestamp`.
+- Backend kiểm tra và xác thực token bằng Firebase Admin SDK.
+- Backend kiểm tra và xác thực token bằng Firebase Admin SDK.
+
+## API Endpoints
+
+Danh sách các endpoint chính của backend (base URL: `http://localhost:8000`):
+
+- **GET /**
+	- Mô tả: Root, liệt kê các endpoint hiện có.
+	- Ví dụ:
+
+```bash
+curl http://localhost:8000/
+```
+
+- **GET /health**
+	- Mô tả: Kiểm tra trạng thái service.
+	- Ví dụ:
+
+```bash
+curl http://localhost:8000/health
+```
+
+- **POST /auth/signup**
+	- Mô tả: Đăng ký tài khoản bằng email/password, gửi email xác thực.
+	- Body (JSON): `{ "email": "user@gmail.com", "password": "secret" }` (chỉ chấp nhận `@gmail.com`).
+	- Ví dụ:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"email":"user@gmail.com","password":"secret"}' http://localhost:8000/auth/signup
+```
+
+- **POST /auth/login**
+	- Mô tả: Đăng nhập bằng email/password.
+	- Body (JSON): `{ "email": "user@gmail.com", "password": "secret" }`
+	- Ví dụ:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"email":"user@gmail.com","password":"secret"}' http://localhost:8000/auth/login
+```
+
+- **POST /auth/google**
+	- Mô tả: Xác thực token Google từ frontend (gửi `id_token`) và trả về thông tin người dùng.
+	- Body (JSON): `{ "id_token": "<google-id-token>" }`
+	- Ví dụ:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"id_token":"<google-id-token>"}' http://localhost:8000/auth/google
+```
+
+- **GET /auth/google/start** và **GET /auth/google/callback**
+	- Mô tả: OAuth redirect flow — truy cập bằng trình duyệt (không dùng curl đơn giản).
+
+- **POST /auth/resend-verification**
+	- Mô tả: Tạo link xác thực email và trả về link.
+	- Body (JSON): `{ "email": "user@gmail.com" }`
+	- Ví dụ:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"email":"user@gmail.com"}' http://localhost:8000/auth/resend-verification
+```
+
+- **GET /auth/me**
+	- Mô tả: Lấy thông tin user hiện tại từ token.
+	- Headers: `Authorization: Bearer <idToken>`
+	- Ví dụ:
+
+```bash
+curl -H "Authorization: Bearer <idToken>" http://localhost:8000/auth/me
+```
+
+- **GET /notes/**
+	- Mô tả: Lấy danh sách ghi chú của user, sắp xếp theo `timestamp`.
+	- Headers: `Authorization: Bearer <idToken>`
+	- Ví dụ:
+
+```bash
+curl -H "Authorization: Bearer <idToken>" http://localhost:8000/notes/
+```
+
+- **POST /notes/**
+	- Mô tả: Tạo ghi chú mới cho user.
+	- Headers: `Authorization: Bearer <idToken>`
+	- Body (JSON): `{ "title": "Tiêu đề", "content": "Nội dung" }`
+	- Ví dụ:
+
+```bash
+curl -X POST -H "Authorization: Bearer <idToken>" -H "Content-Type: application/json" -d '{"title":"Ghi chú 1","content":"Nội dung"}' http://localhost:8000/notes/
+```
+
+- **PUT /notes/{note_id}**
+	- Mô tả: Cập nhật ghi chú (một hoặc nhiều trường).
+	- Headers: `Authorization: Bearer <idToken>`
+	- Body (JSON): `{ "title": "..." }` hoặc `{ "content": "..." }`
+	- Ví dụ:
+
+```bash
+curl -X PUT -H "Authorization: Bearer <idToken>" -H "Content-Type: application/json" -d '{"title":"Tiêu đề mới"}' http://localhost:8000/notes/<note_id>
+```
+
+- **DELETE /notes/{note_id}**
+	- Mô tả: Xoá ghi chú.
+	- Headers: `Authorization: Bearer <idToken>`
+	- Ví dụ:
+
+```bash
+curl -X DELETE -H "Authorization: Bearer <idToken>" http://localhost:8000/notes/<note_id>
+```
+
+Ghi chú: các endpoint yêu cầu xác thực dùng header `Authorization: Bearer <idToken>`; token được cấp khi gọi `/auth/login` hoặc từ Firebase Google sign-in.
+
+## Cấu trúc dự án
+
+Dưới đây là cấu trúc thư mục chính của dự án:
+
+```
+Lab2-API-Firebase/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── backend
+│   └── app
+│       ├── main.py
+│       ├── core
+│       │   └── firebase_config.py
+│       ├── dependencies
+│       │   └── auth.py
+│       ├── routers
+│       │   ├── auth.py
+│       │   └── notes.py
+│       ├── schemas
+│       │   ├── auth.py
+│       │   └── note.py
+│       └── services
+│           └── firestore_service.py
+├── frontend
+│   ├── api_client.py
+│   └── app.py
+└── .streamlit
+	└── secrets.toml  # file cấu hình nhạy cảm, không commit
+```
+
+Mô tả ngắn:
+- `backend/app`: mã nguồn FastAPI (API, xác thực, truy xuất Firestore).
+- `frontend`: ứng dụng Streamlit (giao diện người dùng).
+- `lab2-api-firebase` (nếu xuất hiện): thư mục sao lưu hoặc bản nộp; không bắt buộc để chạy project.
 
 ## Cấu hình Firebase - File secrets.toml
 
@@ -101,20 +256,6 @@ Môi trường ảo giúp tách riêng thư viện của từng project, tránh 
 - Hạn chế lỗi kiểu `Import could not be resolved` do cài package nhầm interpreter.
 - Dọn dẹp nhanh: chỉ cần xóa thư mục `.venv` khi muốn tạo lại môi trường sạch.
 
-### Cài trực tiếp (không dùng venv)
-
-Trong thư mục gốc của dự án, chạy một trong hai lệnh sau:
-
-```bash
-pip install -r requirements.txt
-```
-
-Hoặc:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
 ### Dùng môi trường ảo (`.venv`)
 
 1. Tạo môi trường ảo:
@@ -145,8 +286,6 @@ pip install -r requirements.txt
 deactivate
 ```
 
-File `requirements.txt` hiện gồm các thư viện chính: FastAPI, Uvicorn, Transformers (`<5`), PyTorch, Requests, Pydantic, OmegaConf.
-
 ## Hướng dẫn chạy chương trình
 
 Chạy backend:
@@ -158,7 +297,7 @@ uvicorn backend.app.main:app --reload
 Chạy frontend:
 
 ```bash
-=
+streamlit run frontend/app.py
 ```
 
 Mở các đường dẫn kiểm tra:
@@ -166,9 +305,9 @@ Mở các đường dẫn kiểm tra:
 - Local URL: `http://localhost:8501`
 - Network URL: sẽ hiển thị trong terminal sau khi chạy `streamlit run frontend/app.py` (địa chỉ mạng thay đổi theo máy)
 
+## Các API Endpoint
+
 
 ## Liên kết video demo
 
 - Xem video: [Google Drive - Demo sản phẩm](https://drive.google.com/file/d/1hsmChZx0BkBiVTRFkVLv8iG3nnph_YzF/view?usp=sharing)
-- Ghi chú: Vui lòng bật quyền `Anyone with the link` để giảng viên có thể xem trực tiếp.
-

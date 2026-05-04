@@ -19,3 +19,10 @@ app.include_router(auth_router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/")
+def root():
+    paths = [r.path for r in app.routes if isinstance(r.path, str)]
+    filtered = [p for p in paths if not p.startswith("/openapi") and not p.startswith("/docs") and not p.startswith("/redoc")]
+    return {"service": "Note App Backend", "endpoints": sorted(set(filtered))}
